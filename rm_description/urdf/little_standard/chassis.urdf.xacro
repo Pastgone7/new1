@@ -1,0 +1,63 @@
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+    <xacro:include filename="$(find rm_description)/urdf/common/mecanum_wheel.urdf.xacro"/>
+
+    <!-- https://upload.wikimedia.org/wikipedia/commons/5/52/Wheelbase_and_Track.png -->
+    <xacro:property name="wheel_track" value="0.36"/>
+    <xacro:property name="wheel_base" value="0.36"/>
+    <xacro:property name="wheel_offset_z" value="0.028931"/>
+
+    <xacro:macro name="chassis" params="roller_type">
+
+        <link name="base_link">
+            <inertial>
+                <mass value="14.539963"/>
+                <origin xyz="-0.012563 0.000436 0.108505"/>
+                <inertia ixx="2.882E-01" ixy="3.515E-04" ixz="1.810E-02" iyy="4.132E-01"
+                         iyz="-6.986E-04" izz="6.216E-01"/>
+            </inertial>
+            <visual>
+                <origin xyz="0 0 0" rpy="0 0 0"/>
+                <geometry>
+                    <mesh filename="package://rm_description/meshes/little_standard/base_link.stl"
+                          scale="0.001 0.001 0.001"/>
+                </geometry>
+            </visual>
+            <collision>
+                <origin xyz="0 0 0" rpy="0 0 0"/>
+                <geometry>
+                    <mesh filename="package://rm_description/meshes/little_standard/base_link.stl"
+                          scale="0.001 0.001 0.001"/>
+                </geometry>
+            </collision>
+        </link>
+
+
+        <xacro:mecanum_wheel prefix="left_front" connected_to="base_link"
+                             wheel_x_offset="${wheel_track/2}" wheel_y_offset="${wheel_base/2}"
+                             wheel_z_offset="${wheel_offset_z}"
+                             reflect="1" roller_type="${roller_type}"
+                             max_effort="5" max_velocity="50"/>
+        <xacro:mecanum_wheel prefix="right_front" connected_to="base_link"
+                             wheel_x_offset="${wheel_track/2}" wheel_y_offset="${-wheel_base/2}"
+                             wheel_z_offset="${wheel_offset_z}"
+                             reflect="-1" roller_type="${roller_type}"
+                             max_effort="5" max_velocity="50"/>
+        <xacro:mecanum_wheel prefix="left_back" connected_to="base_link"
+                             wheel_x_offset="${-wheel_track/2}" wheel_y_offset="${wheel_base/2}"
+                             wheel_z_offset="${wheel_offset_z}"
+                             reflect="-1" roller_type="${roller_type}"
+                             max_effort="5" max_velocity="50"/>
+        <xacro:mecanum_wheel prefix="right_back" connected_to="base_link"
+                             wheel_x_offset="${-wheel_track/2}" wheel_y_offset="${-wheel_base/2}"
+                             wheel_z_offset="${wheel_offset_z}"
+                             reflect="1" roller_type="${roller_type}"
+                             max_effort="5" max_velocity="50"/>
+        <xacro:wheel_transmission prefix="left_front" mechanical_reduction="19.2032"/>
+        <xacro:wheel_transmission prefix="right_front" mechanical_reduction="-19.2032"/>
+        <xacro:wheel_transmission prefix="left_back" mechanical_reduction="19.2032"/>
+        <xacro:wheel_transmission prefix="right_back" mechanical_reduction="-19.2032"/>
+
+    </xacro:macro>
+
+</robot>

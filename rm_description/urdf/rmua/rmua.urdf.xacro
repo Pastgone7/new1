@@ -1,0 +1,65 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="rmua">
+
+    <xacro:arg name="load_chassis" default="true"/>
+    <xacro:arg name="load_gimbal" default="true"/>
+    <xacro:arg name="load_shooter" default="true"/>
+    <xacro:arg name="load_lidar" default="true"/>
+    <xacro:arg name="use_simulation" default="true"/>
+    <xacro:arg name="roller_type" default="realistic"/>
+    <xacro:arg name="camera_link" default="camera_link"/>
+    <xacro:arg name="camera_optical_frame" default="camera_optical_frame"/>
+
+    <xacro:if value="$(arg load_chassis)">
+        <xacro:include filename="$(find rm_description)/urdf/common/imu.urdf.xacro"/>
+        <xacro:include filename="$(find rm_description)/urdf/rmua/chassis.urdf.xacro"/>
+        <xacro:chassis roller_type="$(arg roller_type)"/>
+
+        <xacro:if value="$(arg use_simulation)">
+            <xacro:IMU connected_to="base_link" imu_name="base_imu"
+                       xyz="0 0 0"
+                       rpy="0 0 0"/>
+        </xacro:if>
+
+        <xacro:if value="$(arg load_lidar)">
+            <xacro:include filename="$(find rm_description)/urdf/common/lidar2d.urdf.xacro"/>
+            <xacro:lidar2d connected_to="base_link" lidar_name="base_lidar" simulation="$(arg use_simulation)"
+                           xyz="0.14 0 0.13"
+                           rpy="0 0 3.14159"/>
+        </xacro:if>
+
+        <xacro:if value="$(arg load_gimbal)">
+            <xacro:include filename="$(find rm_description)/urdf/rmua/gimbal.urdf.xacro"/>
+            <xacro:include filename="$(find rm_description)/urdf/rmua/gimbal.transmission.urdf.xacro"/>
+            <xacro:include filename="$(find rm_description)/urdf/common/camera.urdf.xacro"/>
+
+            <xacro:camera_sensor xyz="0.0823 -0.071023 0.072" rpy="0 0 0" frame_id="$(arg camera_link)" parent="pitch"
+                                 camera_sim="$(arg use_simulation)"/>
+            <xacro:camera_optical_frame xyz="0.06 0.0 0.0"
+                                        rpy="-1.57079 0.0 -1.57079"
+                                        frame_id="$(arg camera_optical_frame)"
+                                        parent="$(arg camera_link)"
+                                        camera_sim="false"/>
+
+            <xacro:IMU connected_to="$(arg camera_link)" imu_name="gimbal_imu"
+                       xyz="-0.025 0 -0.04"
+                       rpy="3.14 0 1.57"/>
+
+            <xacro:if value="$(arg load_shooter)">
+                <xacro:include filename="$(find rm_description)/urdf/rmua/shooter.urdf.xacro"/>
+                <xacro:include filename="$(find rm_description)/urdf/rmua/shooter.transmission.urdf.xacro"/>
+            </xacro:if>
+        </xacro:if>
+    </xacro:if>
+
+
+    <xacro:if value="$(arg use_simulation)">
+        <gazebo>
+            <plugin name="rm_ros_control" filename="librm_robot_hw_sim.so">
+                <robotNamespace>/</robotNamespace>
+                <robotSimType>rm_gazebo/RmRobotHWSim</robotSimType>
+            </plugin>
+        </gazebo>
+    </xacro:if>
+
+</robot>

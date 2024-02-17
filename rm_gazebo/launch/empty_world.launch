@@ -1,0 +1,40 @@
+<launch>
+    <arg name="robot_type" default="$(env ROBOT_TYPE)" doc="Robot type [standard, auto, hero, engineer,sentry,rmua]"/>
+    <arg name="load_chassis" default="true"/>
+    <arg name="load_gimbal" default="true"/>
+    <arg name="load_shooter" default="true"/>
+    <arg name="load_arm" default="true"/>
+    <arg name="paused" default="false"/>
+    <arg name="roller_type" default="simple" doc="simple or realistic"/>
+    <rosparam file="$(find rm_gazebo)/config/imus.yaml" command="load" if="$(arg load_gimbal)"/>
+    <include file="$(find gazebo_ros)/launch/empty_world.launch">
+        <arg name="paused" value="$(arg paused)"/>
+        <arg name="world_name" value="$(find rm_gazebo)/worlds/empty.world"/>
+    </include>
+
+        
+    <param name="robot_description" command="$(find xacro)/xacro $(find rm_description)/urdf/$(arg robot_type)/$(arg robot_type).urdf.xacro
+         load_chassis:=$(arg load_chassis) load_gimbal:=$(arg load_gimbal) load_shooter:=$(arg load_shooter)
+         load_arm:=$(arg load_arm)
+         use_simulation:=true roller_type:=$(arg roller_type)"/>
+         
+    <node name="spawn_model" pkg="gazebo_ros" type="spawn_model" clear_params="true"
+          args="-z 0 -param robot_description -urdf -model $(arg robot_type)" output="screen"/>
+          
+          
+    <rosparam file="$(find rm_gazebo)/config/wheel_joint.yaml" command="load"/>
+    <node name="controller_spawner" pkg="controller_manager" type="spawner" output="screen" ns="hero" args="hero_robot"/>      
+          <!-- send fake joint values -->
+    <node pkg="joint_state_publisher" type="joint_state_publisher" name="joint_state_publisher">
+        <!--param name="use_gui" value="true"/-->
+        <param name="publish_frequency" type="double" value="50"/>
+    </node>
+     
+   
+    <node pkg="robot_state_publisher" type="robot_state_publisher" name="robot_state_publisher" output="screen">
+          <param name="publish_frequency" type="double" value="50"/>
+          <param name="tf_prefix" value=""/>
+    </node>
+    <rosparam file="$(find hero_chassis_controller)/config/param.yaml" command="load"/>
+
+</launch>

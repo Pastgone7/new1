@@ -1,0 +1,164 @@
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="chassis">
+
+    <xacro:include filename="$(find rm_description)/urdf/common/swerve_drive.urdf.xacro"/>
+    <!-- https://upload.wikimedia.org/wikipedia/commons/5/52/Wheelbase_and_Track.png -->
+    <xacro:property name="wheel_track" value="0.423"/>
+    <xacro:property name="wheel_base" value="0.412"/>
+    <xacro:property name="wheel_offset_z" value="0.06795"/>
+
+    <xacro:macro name="chassis">
+
+        <link name="base_link">
+            <inertial>
+                <mass value="14.321805"/>
+                <origin xyz="-0.011828 -0.007426 0.160123"/>
+                <inertia ixx="1.06e0" ixy="1.071e-3" ixz="3.011e-2" iyy="9.494e-1" iyz="2.344e-2" izz="7.430e-1"/>
+            </inertial>
+            <visual>
+                <origin xyz="0 0 0" rpy="0 0 0"/>
+                <geometry>
+                    <mesh filename="package://rm_description/meshes/engineer/base_link.stl" scale="0.001 0.001 0.001"/>
+                </geometry>
+            </visual>
+            <collision>
+                <origin xyz="0 0 0" rpy="0 0 0"/>
+                <geometry>
+                    <mesh filename="package://rm_description/meshes/engineer/base_collision.stl"
+                          scale="0.001 0.001 0.001"/>
+                </geometry>
+            </collision>
+            <collision>
+                <origin xyz="0.175 -0.247 0.275" rpy="0 0 0"/>
+                <geometry>
+                    <box size="0.061 0.042 0.4"/>
+                </geometry>
+            </collision>
+            <collision>
+                <origin xyz="0.175 0.247 0.275" rpy="0 0 0"/>
+                <geometry>
+                    <box size="0.091 0.05 0.45"/>
+                </geometry>
+            </collision>
+            <collision>
+                <origin xyz="-0.175 -0.247 0.275" rpy="0 0 0"/>
+                <geometry>
+                    <box size="0.091 0.05 0.45"/>
+                </geometry>
+            </collision>
+            <collision>
+                <origin xyz="0.175 -0.247 0.275" rpy="0 0 0"/>
+                <geometry>
+                    <box size="0.091 0.05 0.45"/>
+                </geometry>
+            </collision>
+            <collision>
+                <origin xyz="-0.175 0.247 0.275" rpy="0 0 0"/>
+                <geometry>
+                    <box size="0.091 0.05 0.45"/>
+                </geometry>
+            </collision>
+            <collision>
+                <origin xyz="0. -0.255 0.51" rpy="0 0 0"/>
+                <geometry>
+                    <box size="0.41 0.06 0.09"/>
+                </geometry>
+            </collision>
+            <collision>
+                <origin xyz="0. 0.255 0.51" rpy="0 0 0"/>
+                <geometry>
+                    <box size="0.41 0.06 0.09"/>
+                </geometry>
+            </collision>
+        </link>
+
+        <link name="card">
+            <inertial>
+                <mass value="0.807434"/>
+                <origin xyz="0.038318 -0.188972 -0.009577"/>
+                <inertia ixx="3.069e-2" ixy="5.419e-3" ixz="2.460e-4" iyy="4.318e-3" iyz="3.398e-2"
+                         izz="4.126e-3"/>
+            </inertial>
+            <visual>
+                <origin xyz="0 0 0" rpy="0 0 -1.57"/>
+                <geometry>
+                    <mesh filename="package://rm_description/meshes/engineer/card.stl" scale="0.001 0.001 0.001"/>
+                </geometry>
+            </visual>
+        </link>
+
+        <link name="drag">
+            <inertial>
+                <mass value="0.404605"/>
+                <origin xyz="0.053283 0.032371 0.017125"/>
+                <inertia ixx="5.893e-3" ixy="1.346e-4" ixz="-8.957569e-5" iyy="2.879e-3" iyz="-4.020e-4"
+                         izz="8.206e-3"/>
+            </inertial>
+            <visual>
+                <origin xyz="0 0 0" rpy="0 0 0"/>
+                <geometry>
+                    <mesh filename="package://rm_description/meshes/engineer/drag.stl"
+                          scale="0.001 0.001 0.001"/>
+                </geometry>
+            </visual>
+        </link>
+
+        <joint name="card_joint" type="prismatic">
+            <parent link="base_link"/>
+            <child link="card"/>
+            <origin xyz="0.244 0. 0.036" rpy="0 0 -1.57"/>
+            <axis xyz="0 1 0"/>
+            <limit lower="-0.01" upper="0.6" velocity="3" effort="200"/>
+        </joint>
+
+        <joint name="drag_joint" type="revolute">
+            <parent link="base_link"/>
+            <child link="drag"/>
+            <origin xyz="0.245 0 0.06" rpy="0 0 0"/>
+            <axis xyz="0 1 0"/>
+            <limit lower="-10" upper="20" velocity="6" effort="200"/>
+        </joint>
+
+        <transmission name="trans_card_joint">
+            <type>transmission_interface/SimpleTransmission</type>
+            <actuator name="card_joint_motor">
+                <mechanicalReduction>1800</mechanicalReduction>
+            </actuator>
+            <joint name="card_joint">
+                <offset>0</offset>
+                <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+            </joint>
+        </transmission>
+
+        <transmission name="trans_drag_joint">
+            <type>transmission_interface/SimpleTransmission</type>
+            <actuator name="drag_joint_motor">
+                <mechanicalReduction>2</mechanicalReduction>
+            </actuator>
+            <joint name="drag_joint">
+                <offset>0</offset>
+                <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+            </joint>
+        </transmission>
+
+        <xacro:swerve_drive prefix="left_front" connected_to="base_link"
+                            x_offset="${wheel_track/2}" y_offset="${wheel_base/2}"
+                            z_offset="${wheel_offset_z}"/>
+        <xacro:swerve_drive prefix="right_front" connected_to="base_link"
+                            x_offset="${wheel_track/2}" y_offset="${-wheel_base/2}"
+                            z_offset="${wheel_offset_z}"/>
+        <xacro:swerve_drive prefix="left_back" connected_to="base_link"
+                            x_offset="${-wheel_track/2}" y_offset="${wheel_base/2}"
+                            z_offset="${wheel_offset_z}"/>
+        <xacro:swerve_drive prefix="right_back" connected_to="base_link"
+                            x_offset="${-wheel_track/2}" y_offset="${-wheel_base/2}"
+                            z_offset="${wheel_offset_z}"/>
+
+        <xacro:swerve_transmission prefix="left_front" wheel_reduction="13" pivot_offset="4.481304"/>
+        <xacro:swerve_transmission prefix="right_front" wheel_reduction="13" pivot_offset="0.733332"/>
+        <xacro:swerve_transmission prefix="left_back" wheel_reduction="13" pivot_offset="4.25117"/>
+        <xacro:swerve_transmission prefix="right_back" wheel_reduction="13" pivot_offset="0.80697"/>
+
+    </xacro:macro>
+
+
+</robot>
