@@ -22,7 +22,7 @@
           args="-z 0 -param robot_description -urdf -model $(arg robot_type)" output="screen"/>
           
           
-    <rosparam file="$(find rm_gazebo)/config/wheel_joint.yaml" command="load"/>
+    <rosparam file="$(find hero_chassis_controller)/config/wheel_joint.yaml" command="load"/>
     <node name="controller_spawner" pkg="controller_manager" type="spawner" output="screen" ns="hero" args="hero_robot"/>      
           <!-- send fake joint values -->
     <node pkg="joint_state_publisher" type="joint_state_publisher" name="joint_state_publisher">
@@ -35,6 +35,6 @@
           <param name="publish_frequency" type="double" value="50"/>
           <param name="tf_prefix" value=""/>
     </node>
-    <rosparam file="$(find hero_chassis_controller)/config/param.yaml" command="load"/>
+    
 
 </launch>
